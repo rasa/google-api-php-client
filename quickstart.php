@@ -114,6 +114,22 @@ $results = $service->events->listEvents($calendarId, $optParams);
 $a = array();
 $n = 0;
 
+$json = file_get_contents('http://country.io/names.json');
+$ccs = json_decode($json);
+#print_r($ccs);
+$i2n = array();
+$n2i = array();
+foreach ($ccs as $k => $v) {
+	$n2i[strtoupper($v)] = strtoupper($k);
+	$i2n[strtoupper($k)] = strtoupper($v);
+}
+#print_r($map);
+
+$n2i['DEUTSCHLAND'] = 'DE';
+$n2i['CHINA'] = 'CN';
+
+#exit(0);
+
 if (count($results->getItems()) > 0) {
   foreach ($results->getItems() as $event) {
     $start = $event->start->dateTime;
@@ -153,22 +169,48 @@ if (count($results->getItems()) > 0) {
 		$summary = trim($m[1]);
 	}
 	
+	$cc = '';
+	
 	if (preg_match('/^(.*),\s*United\s*States\s*$/', $location, $m)) {
+		$cc = 'US';
 		$location = trim($m[1]);
 	}
 	
 	if (preg_match('/^(.*),\s*US\s*$/', $location, $m)) {
+		$cc = 'US';
 		$location = trim($m[1]);
 	}
 
 	if (preg_match('/^(.*)-\d{4}\s*$/', $location, $m)) {
 		$location = trim($m[1]);
-	}
-	
+	}	
 	
 	if (preg_match('/^(.*)\s*\d{5}\s*$/', $location, $m)) {
 		$location = trim($m[1]);
 	}
+
+	if (preg_match('/^(.*),?\s*CA\s*$/', $location, $m)) {
+		$cc = 'US';
+	}
+
+	if ($cc == '') {
+		if (preg_match('/,\s*([^,]*)\s*$/', $location, $m)) {
+			$country = strtoupper(trim($m[1]));
+			if (array_key_exists($country, $n2i)) {
+				$cc = $n2i[$country];
+			}
+			if (array_key_exists($country, $i2n)) {
+				$cc = $country;
+			}
+			# printf("%s=%s %s %s\n", $cc, $country, $start, $location);
+		}
+	}
+
+	if ($cc == '') {
+		$cc = 'US';
+	}
+
+	$flag_url = sprintf('http://geotree.geonames.org/img/flags18/%s.png', $cc);
 	
 	$start_date = $date;
 	$end_date = $date;
@@ -191,6 +233,8 @@ if (count($results->getItems()) > 0) {
 		'description' => $event->getDescription(),
 		'start_date' => $start_date,
 		'end_date' => $end_date,
+		'flag_alt' => $cc,
+		'flag_url' => $flag_url,
 		'key' => $key,
 		'location'	=> $location,
 		'location_title'	=> $event->getLocation(),
@@ -243,8 +287,13 @@ foreach ($a as $e) {
 		$e['summary_url'],
 		htmlspecialchars($e['summary'], ENT_HTML5 | ENT_QUOTES)
 	);
-	$h .= sprintf("<td title='%s'><a target='_blank' href='%s'>%s</a></td>\n", 
+	$url = '';
+	if ($e['flag_alt'] > '') {
+		$url = sprintf(" <img align='bottom' height='16' width='16' src='%s' alt='%s'/>", $e['flag_url'], $e['flag_alt']);
+	}
+	$h .= sprintf("<td title='%s'>%s <a target='_blank' href='%s'>%s</a></td>\n", 
 		htmlspecialchars($e['location_title'], ENT_HTML5 | ENT_QUOTES),
+		$url,
 		$e['location_url'],
 		htmlspecialchars($e['location'], ENT_HTML5 | ENT_QUOTES)
 	);
