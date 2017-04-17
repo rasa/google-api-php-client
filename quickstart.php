@@ -122,12 +122,6 @@ if (count($results->getItems()) > 0) {
     }
 	$summary = $event->getSummary();
 	$location = $event->getLocation();
-	#$m = preg_split('/,/', $location);
-	#if (count($m) > 0) {
-	#	$place = $m[0];
-	#} else {
-	#	$place = $location;
-	#}
 	$key = strftime('%y-%m-%d', strtotime($start));
 	$key = sprintf("%s-%03d", $key, $n++);
 	$date = strftime('%d&#8209;%h&#8209;%y', strtotime($start));
@@ -181,9 +175,6 @@ if (count($results->getItems()) > 0) {
 	$etag = $event->etag;
 	$date_title = $start;
 	if ($event->start->timeZone > '') {
-		if (preg_match('/(.*)-\d\d:\d\d\s*$/', $date_title, $m)) {
-			#$date_title = trim($m[1]);
-		}
 		$date_title .= sprintf(' (%s)', $event->start->timeZone);
 	}
 	
@@ -193,6 +184,7 @@ if (count($results->getItems()) > 0) {
 		$date_title = $a[$etag]['date_title'];
 		$date = sprintf("%s&nbsp;&#8209; %s", $start_date, $end_date);
 	}
+
 	$a[$etag] = array(
 		'date' => $date,
 		'date_title' => $date_title,
@@ -203,18 +195,12 @@ if (count($results->getItems()) > 0) {
 		'location'	=> $location,
 		'location_title'	=> $event->getLocation(),
 		'location_url' => 'https://maps.google.com/maps?q=' . urlencode($location),
-		#'place' => $place,
 		'summary' => $summary,
 		'summary_title' => $event->getSummary(),
 		'summary_url' => $event->htmlLink,
 	);
   }
 }
-
-# print_r($a);
-# exit(0);
-
-# krsort($a);
 
 function cmp($a, $b) {
     return ($a['key'] > $b['key']) ? -1 : 1;
@@ -272,34 +258,3 @@ foreach ($a as $e) {
 $h .= "\n</tbody>\n</table>";
 
 echo $h;
-
-/*
-
-Google_Service_Calendar_Event Object
-(
-    [description] => Prana and Prajna: Experience the vital energy in the body, prana, on an elemental level through breath awareness woven into the postures; and build an internal sensory vocabulary of energy to discern ΓÇ£PrajnaΓÇ¥ what is best for you. Restorative practice
-    [htmlLink] => https://www.google.com/calendar/event?eid=c3FmODFuN2xzMjVmazNmMW5razA0aGlxMGMgZ2s2cjJxMTBzOTNsYmtwNDVwaW5jZTVuaGNAZw
-    [location] => Tri Yoga 2nd Floor, Kingly Court Carnaby St London W1B 5PW, United Kingdom
-    [summary] => Prana and Prajna - Triyoga Soho, London - 7:45pm BST
-	
-    [start] => Google_Service_Calendar_EventDateTime Object
-        (
-            [date] =>
-            [dateTime] => 2014-07-25T11:45:00-07:00
-            [timeZone] =>
-            [internal_gapi_mappings:protected] => Array
-                (
-                )
-
-            [modelData:protected] => Array
-                (
-                )
-
-            [processed:protected] => Array
-                (
-                )
-
-        )
-		
-
-*/
