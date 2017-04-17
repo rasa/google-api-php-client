@@ -5,3 +5,5 @@ vendor
 examples/testfile-small.txt
 examples/testfile.txt
 tests/.apiKey
+client_secret.json
+calendar-php-quickstart.json
